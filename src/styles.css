@@ -2,3 +2,15 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+
+body{
+    width: 95%;
+    margin: 0 auto;
+}
+@media (min-width: 1000px) {
+    body{
+        width: 80%;
+        margin: 0 auto;
+    }
+}
