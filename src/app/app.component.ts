@@ -67,6 +67,9 @@ export class AppComponent {
    applyFilter(filterValue: string): void {
     this.dataSource.filter = filterValue;
    }
-
+   clearFilter() {
+    this.filterControl.setValue('');
+    this.dataSource.filter = '';
+  }
 
 }

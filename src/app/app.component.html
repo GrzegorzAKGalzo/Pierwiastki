@@ -15,7 +15,14 @@
         style="position: absolute; top: 50%; right: 8px; transform: translateY(-50%);"
       ></mat-progress-spinner>
     </mat-form-field>
-   
+    <button
+      mat-button
+      color="primary"
+      *ngIf="filterControl.value"
+      (click)="clearFilter()"
+    >
+      Clear
+    </button>
   </div>
   
   
