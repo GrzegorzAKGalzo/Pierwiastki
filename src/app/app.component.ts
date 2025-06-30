@@ -10,5 +10,14 @@ import { ELEMENT_DATA, PeriodicElement } from './periodic-element';
 export class AppComponent {
   title = 'Pierwiastki';
   displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
-  dataSource = ELEMENT_DATA;
+  dataSource: PeriodicElement[] = [];
+
+ ngOnInit(): void {
+    // Symulacja pobierania danych
+    setTimeout(() => {
+      this.dataSource = [...ELEMENT_DATA];
+    }, 1000);
+
+   
+  }
 }
