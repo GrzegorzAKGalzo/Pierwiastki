@@ -23,3 +23,9 @@
   height: 100vh
 }
 
+.no-results {
+  margin-top: 20px;
+  font-size: 1.2rem;
+  color: #666;
+  text-align: center;
+}

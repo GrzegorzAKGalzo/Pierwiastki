@@ -47,4 +47,8 @@
     <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
   
   </table>
+
+  <div *ngIf="dataSource.filteredData.length === 0 && !loading" class="no-results">
+    Ops, no matches 😕
+  </div>
 </div>
