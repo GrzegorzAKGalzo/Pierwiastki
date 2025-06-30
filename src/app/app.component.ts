@@ -1,7 +1,6 @@
 import { Component, effect, signal } from '@angular/core';
 import { ELEMENT_DATA, PeriodicElement } from './periodic-element';
 import { MatDialog } from '@angular/material/dialog';
-import { EditDialogComponent } from './edit-dialog/edit-dialog.component';
 import { FormControl } from '@angular/forms';
 import { debounceTime } from 'rxjs/operators';
 import { MatTableDataSource } from '@angular/material/table';
@@ -17,8 +16,15 @@ import { ElementsStore } from './stores/elements.store';
 
 export class AppComponent {
   displayedColumns = ['position', 'name', 'weight', 'symbol'];
-
-  constructor(public elementsStore: ElementsStore) {}
+  loading = signal(true);
+  elements = signal<PeriodicElement[]>([]);
+  
+  constructor(public elementsStore: ElementsStore) {
+    setTimeout(() => {
+      this.elements.set(ELEMENT_DATA); 
+      this.loading.set(false);
+    }, 2000);
+  }
 
   filterInput = signal('');
   filtering = signal(false);
