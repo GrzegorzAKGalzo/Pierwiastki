@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, effect, signal } from '@angular/core';
 import { ELEMENT_DATA, PeriodicElement } from './periodic-element';
 import { MatDialog } from '@angular/material/dialog';
 import { EditDialogComponent } from './edit-dialog/edit-dialog.component';
 import { FormControl } from '@angular/forms';
 import { debounceTime } from 'rxjs/operators';
 import { MatTableDataSource } from '@angular/material/table';
+import { ElementsStore } from './stores/elements.store';
 
 
 @Component({
@@ -13,63 +14,79 @@ import { MatTableDataSource } from '@angular/material/table';
   styleUrls: ['./app.component.css'],
 
 })
+
 export class AppComponent {
-  title = 'Pierwiastki';
-  displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
-  dataSource = new MatTableDataSource<PeriodicElement>([]);
-  filterControl = new FormControl('');
-  loading = true;
-  filtering = false;
+  displayedColumns = ['position', 'name', 'weight', 'symbol'];
 
+  constructor(public elementsStore: ElementsStore) {}
 
-  
-  constructor(private dialog: MatDialog){
-     this.filterControl.valueChanges.pipe(
-      debounceTime(2000)
-    ).subscribe(value => {
-      this.applyFilter(value!);
-      this.filtering = false;
-    });
-    this.filterControl.valueChanges.subscribe(() => {
-      this.filtering = true;
-    });
+  filterInput = signal('');
+  filtering = signal(false);
 
+  private debounceTimeout?: any;
 
-    this.dataSource.filterPredicate = (data: PeriodicElement, filter: string) => {
-      const dataStr = Object.values(data).join(' ').toLowerCase();
-      return dataStr.includes(filter.trim().toLowerCase());
-    };
+  onFilterInputChange(value: string | null) {
+    if (!value) return;
+    this.filterInput.set(value);
+    this.filtering.set(true);
+    clearTimeout(this.debounceTimeout);
+    this.debounceTimeout = setTimeout(() => {
+      this.elementsStore.setFilter(value);
+      this.filtering.set(false);
+    }, 2000);
+  }
+  onInput(event: Event) {
+    const input = event.target as HTMLInputElement | null;
+    if (!input) return;
+    this.onFilterInputChange(input.value);
+  }
+  // For editing popup
+  editingElement: PeriodicElement | null = null;
+  editingField: keyof PeriodicElement | null = null;
+
+  openEditDialog(element: PeriodicElement, field: keyof PeriodicElement) {
+    this.editingElement = { ...element }; // clone for editing
+    this.editingField = field;
+    
   }
 
-  ngOnInit(): void {
-      // Symulacja pobierania danych
-      setTimeout(() => {
-        this.dataSource.data = ELEMENT_DATA;
-        this.loading = false;
-
-      }, 1000);
+  saveEdit() {
+    if (this.editingElement) {
+      this.elementsStore.updateElement(this.editingElement);
+      this.editingElement = null;
+      this.editingField = null;
     }
-
-
-    openEditDialog<K extends keyof PeriodicElement>(element: PeriodicElement, column: K): void {
-      const dialogRef = this.dialog.open(EditDialogComponent, {
-        data: { value: element[column] }
-      });
-
-      dialogRef.afterClosed().subscribe((result) => {
-        if (result !== undefined) {
-          element[column] = result as PeriodicElement[K]; // 👈 tu rzutowanie
-          this.dataSource = this.dataSource;
-        }
-      });
-    }
-
-   applyFilter(filterValue: string): void {
-    this.dataSource.filter = filterValue;
-   }
-   clearFilter() {
-    this.filterControl.setValue('');
-    this.dataSource.filter = '';
   }
+
+  cancelEdit() {
+    this.editingElement = null;
+    this.editingField = null;
+  }
+
+  clearFilter() {
+    this.filterInput.set(' ');
+    this.elementsStore.setFilter(' ');
+  }
+
+
+  get editingValue(): string | number {
+  if (!this.editingElement || !this.editingField) return '';
+  return this.editingElement[this.editingField];
+}
+
+set editingValue(value: string | number) {
+  if (this.editingElement && this.editingField) {
+    if (this.editingField === 'weight' || this.editingField === 'position') {
+      // For numeric fields convert to number
+      this.editingElement[this.editingField] = Number(value) as any;
+    } else {
+      // For string fields, ensure it's string
+      this.editingElement[this.editingField] = String(value) as any;
+    }
+  }
+}
+
+
+
 
 }

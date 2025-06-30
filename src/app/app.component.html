@@ -1,61 +1,96 @@
-<div *ngIf="loading" class="loading-container">
-  <mat-spinner diameter="48"></mat-spinner>
-</div>
+<div style="margin-bottom: 16px;">
+  <mat-form-field appearance="outline" style="width: 300px; position: relative;">
+    <mat-label>Filter all fields</mat-label>
+    <input
+      matInput
+      [value]="filterInput()"
+      (input)="onInput($event)"
+      placeholder="Search..."
+    />
+    <mat-progress-spinner style="position: absolute; right: 0; top: 15px;" *ngIf="filtering()" diameter="24" mode="indeterminate"></mat-progress-spinner>
 
-<div *ngIf="!loading">
-  <div style="margin-bottom: 16px; ">
-    <mat-form-field appearance="outline" style="position: relative; width: 300px;">
-      <mat-label>Filter all fields</mat-label>
-      <input matInput [formControl]="filterControl" placeholder="Search..." />
-        <mat-progress-spinner
-        *ngIf="filtering"
-        diameter="20"
-        mode="indeterminate"
-        class="filter-spinner"
-        style="position: absolute; top: 50%; right: 8px; transform: translateY(-50%);"
-      ></mat-progress-spinner>
-    </mat-form-field>
     <button
       mat-button
-      color="primary"
-      *ngIf="filterControl.value"
+      matSuffix
+      *ngIf="!filtering()"
+      aria-label="Clear"
       (click)="clearFilter()"
     >
       Clear
     </button>
-  </div>
-  
-  
-  <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 demo-table">
-    <!-- Position Column -->
-    <ng-container matColumnDef="position">
-      <th mat-header-cell *matHeaderCellDef>Number</th>
-      <td mat-cell *matCellDef="let element" (click)="openEditDialog(element, 'position')">{{element.position}}</td>
-    </ng-container>
-  
-    <!-- Name Column -->
-    <ng-container matColumnDef="name">
-      <th mat-header-cell *matHeaderCellDef>Name</th>
-      <td mat-cell *matCellDef="let element" (click)="openEditDialog(element, 'name')">{{element.name}}</td>
-    </ng-container>
-  
-    <!-- Weight Column -->
-    <ng-container matColumnDef="weight">
-      <th mat-header-cell *matHeaderCellDef>Weight</th>
-      <td mat-cell *matCellDef="let element" (click)="openEditDialog(element, 'weight')">{{element.weight}}</td>
-    </ng-container>
-  
-    <!-- Symbol Column -->
-    <ng-container matColumnDef="symbol">
-      <th mat-header-cell *matHeaderCellDef>Symbol</th>
-      <td mat-cell *matCellDef="let element" (click)="openEditDialog(element, 'symbol')">{{element.symbol}}</td>
-    </ng-container>
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-  
-  </table>
+  </mat-form-field>
+</div>
 
-  <div *ngIf="dataSource.filteredData.length === 0 && !loading" class="no-results">
-    Ops, no matches 😕
+<table mat-table [dataSource]="elementsStore.filteredElements()" class="mat-elevation-z8 demo-table">
+  <!-- Position -->
+  <ng-container matColumnDef="position">
+    <th mat-header-cell *matHeaderCellDef>No.</th>
+    <td
+      mat-cell
+      *matCellDef="let element"
+      (click)="openEditDialog(element, 'position')"
+      class="clickable-cell"
+    >
+      {{ element.position }}
+    </td>
+  </ng-container>
+
+  <!-- Name -->
+  <ng-container matColumnDef="name">
+    <th mat-header-cell *matHeaderCellDef>Name</th>
+    <td
+      mat-cell
+      *matCellDef="let element"
+      (click)="openEditDialog(element, 'name')"
+      class="clickable-cell"
+    >
+      {{ element.name }}
+    </td>
+  </ng-container>
+
+  <!-- Weight -->
+  <ng-container matColumnDef="weight">
+    <th mat-header-cell *matHeaderCellDef>Weight</th>
+    <td
+      mat-cell
+      *matCellDef="let element"
+      (click)="openEditDialog(element, 'weight')"
+      class="clickable-cell"
+    >
+      {{ element.weight }}
+    </td>
+  </ng-container>
+
+  <!-- Symbol -->
+  <ng-container matColumnDef="symbol">
+    <th mat-header-cell *matHeaderCellDef>Symbol</th>
+    <td
+      mat-cell
+      *matCellDef="let element"
+      (click)="openEditDialog(element, 'symbol')"
+      class="clickable-cell"
+    >
+      {{ element.symbol }}
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+</table>
+
+<div *ngIf="elementsStore.filteredElements().length === 0" class="no-results">
+  Ops, no matches 😕
+</div>
+
+<!-- Edit Dialog Popup -->
+<div *ngIf="editingElement && editingField" class="edit-popup">
+  <h3>Edit {{ editingField }}</h3>
+  <input
+    [(ngModel)]="editingValue"
+    [type]="editingField === 'weight' || editingField === 'position' ? 'number' : 'text'"
+  />
+  <div class="edit-popup-actions">
+    <button mat-raised-button color="primary" (click)="saveEdit()">Save</button>
+    <button mat-button (click)="cancelEdit()">Cancel</button>
   </div>
 </div>
