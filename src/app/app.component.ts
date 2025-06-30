@@ -19,13 +19,21 @@ export class AppComponent {
   dataSource = new MatTableDataSource<PeriodicElement>([]);
   filterControl = new FormControl('');
   loading = true;
+  filtering = false;
 
+
+  
   constructor(private dialog: MatDialog){
      this.filterControl.valueChanges.pipe(
       debounceTime(2000)
     ).subscribe(value => {
       this.applyFilter(value!);
+      this.filtering = false;
     });
+    this.filterControl.valueChanges.subscribe(() => {
+      this.filtering = true;
+    });
+
 
     this.dataSource.filterPredicate = (data: PeriodicElement, filter: string) => {
       const dataStr = Object.values(data).join(' ').toLowerCase();
